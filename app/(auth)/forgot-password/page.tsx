@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Sparkles, Loader2, Mail, ArrowLeft } from "lucide-react";
+import { Loader2, Mail, ArrowLeft } from "lucide-react";
 import { appName } from "@/lib/constants";
 import { requestPasswordReset } from "@/actions/auth";
 
@@ -47,7 +48,7 @@ export default function ForgotPasswordPage() {
         <div className="rounded-2xl border border-border/60 bg-white/70 p-8 shadow-2xl backdrop-blur-xl dark:bg-card/85">
           <div className="mb-8 text-center">
             <Link href="/" className="inline-flex items-center gap-2 mb-4">
-              <Sparkles className="h-8 w-8 text-primary" />
+              <Image src="/logo.svg" alt="CourseMind Logo" width={32} height={32} className="drop-shadow-sm" />
               <span className="text-2xl font-bold bg-gradient-to-r from-primary to-accent text-transparent bg-clip-text">
                 {appName}
               </span>
