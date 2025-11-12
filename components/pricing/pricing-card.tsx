@@ -68,7 +68,7 @@ export function PricingCard({ plan, featured = false }: PricingCardProps) {
       <CardHeader>
         <CardTitle className="text-2xl">{planDetails.name}</CardTitle>
         <CardDescription>
-          <div className="mt-4">
+          <span className="mt-4 block">
             <span className="text-4xl font-bold text-foreground">
               ${planDetails.price}
             </span>
@@ -77,11 +77,11 @@ export function PricingCard({ plan, featured = false }: PricingCardProps) {
                 /{plan === "MONTHLY" ? "month" : "year"}
               </span>
             )}
-          </div>
+          </span>
           {plan === "YEARLY" && (
-            <p className="text-sm text-green-600 dark:text-green-400 mt-1">
+            <span className="text-sm text-green-600 dark:text-green-400 mt-1 block">
               Save $20 per year
-            </p>
+            </span>
           )}
         </CardDescription>
       </CardHeader>
