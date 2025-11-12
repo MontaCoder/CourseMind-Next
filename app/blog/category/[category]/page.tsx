@@ -182,7 +182,7 @@ export default async function CategoryPage({
             <Link href="/signup">
               <Button size="lg">Get Started Free</Button>
             </Link>
-            <Link href="/pricing">
+            <Link href="/#pricing">
               <Button size="lg" variant="outline">View Pricing</Button>
             </Link>
           </div>
@@ -203,7 +203,7 @@ export default async function CategoryPage({
               <h4 className="font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link href="/pricing" className="text-muted-foreground hover:text-foreground">
+                  <Link href="/#pricing" className="text-muted-foreground hover:text-foreground">
                     Pricing
                   </Link>
                 </li>

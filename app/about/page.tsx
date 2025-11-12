@@ -221,7 +221,7 @@ export default function AboutPage() {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="/pricing">
+              <Link href="/#pricing">
                 <Button size="lg" variant="outline">
                   View Pricing
                 </Button>
@@ -245,7 +245,7 @@ export default function AboutPage() {
               <h4 className="font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link href="/pricing" className="text-muted-foreground hover:text-foreground">
+                  <Link href="/#pricing" className="text-muted-foreground hover:text-foreground">
                     Pricing
                   </Link>
                 </li>

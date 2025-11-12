@@ -233,7 +233,7 @@ export default async function BlogPostPage({
             <Link href="/signup">
               <Button size="lg">Get Started Free</Button>
             </Link>
-            <Link href="/pricing">
+            <Link href="/#pricing">
               <Button size="lg" variant="outline">View Pricing</Button>
             </Link>
           </div>

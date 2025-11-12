@@ -84,7 +84,7 @@ export const emailTemplates = {
             </div>
             <div class="footer">
               <p>You're receiving this email because you subscribed to CourseMind Pro.</p>
-              <p>Manage your subscription in your <a href="${process.env.NEXT_PUBLIC_APP_URL}/profile">account settings</a>.</p>
+              <p>Manage your subscription in your <a href="${process.env.NEXT_PUBLIC_APP_URL}/profile/billing">billing settings</a>.</p>
             </div>
           </div>
         </body>
@@ -159,7 +159,7 @@ The CourseMind Team
               </ul>
 
               <div style="text-align: center;">
-                <a href="${process.env.NEXT_PUBLIC_APP_URL}/pricing" class="button">Resubscribe</a>
+                <a href="${process.env.NEXT_PUBLIC_APP_URL}/profile/billing" class="button">Manage Subscription</a>
               </div>
 
               <p>We'd love to hear your feedback! Reply to this email and let us know how we can improve.</p>
@@ -186,7 +186,7 @@ What happens next:
 - All your existing courses will be preserved
 - You can resubscribe anytime
 
-Resubscribe: ${process.env.NEXT_PUBLIC_APP_URL}/pricing
+Manage your subscription: ${process.env.NEXT_PUBLIC_APP_URL}/profile/billing
 
 We'd love to hear your feedback! Reply to this email and let us know how we can improve.
 

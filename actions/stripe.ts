@@ -42,7 +42,7 @@ export async function createCheckoutSession(plan: "MONTHLY" | "YEARLY") {
         },
       ],
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/profile/billing`,
       customer_email: session.user.email,
       metadata: {
         userId: session.user.id,
@@ -86,7 +86,7 @@ export async function createPortalSession() {
     // Create Stripe portal session
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: subscription.stripeCustomerId,
-      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/profile`,
+      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/profile/billing`,
     });
 
     return { url: portalSession.url };

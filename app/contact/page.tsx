@@ -172,7 +172,7 @@ export default function ContactPage() {
             <Link href="/about">
               <Button variant="outline">About Us</Button>
             </Link>
-            <Link href="/pricing">
+            <Link href="/#pricing">
               <Button variant="outline">Pricing</Button>
             </Link>
             <Link href="/terms">
