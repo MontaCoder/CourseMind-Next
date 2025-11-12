@@ -158,9 +158,294 @@ export async function cancelSubscription() {
     });
 
     revalidatePath("/profile");
+    revalidatePath("/profile/billing");
     return { success: true };
   } catch (error) {
     console.error("Error canceling subscription:", error);
     return { error: "Failed to cancel subscription" };
+  }
+}
+
+export async function resumeSubscription() {
+  try {
+    const session = await auth();
+
+    if (!session?.user) {
+      return { error: "Unauthorized" };
+    }
+
+    const subscription = await db.subscription.findFirst({
+      where: {
+        userId: session.user.id,
+        status: "ACTIVE",
+        cancelAtPeriodEnd: true,
+      },
+    });
+
+    if (!subscription) {
+      return { error: "No subscription set to cancel found" };
+    }
+
+    if (!subscription.stripeSubscriptionId) {
+      return { error: "Stripe subscription ID not found" };
+    }
+
+    // Resume subscription by removing cancel_at_period_end
+    await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+      cancel_at_period_end: false,
+    });
+
+    // Update database
+    await db.subscription.update({
+      where: { id: subscription.id },
+      data: {
+        cancelAtPeriodEnd: false,
+      },
+    });
+
+    revalidatePath("/profile");
+    revalidatePath("/profile/billing");
+    return { success: true };
+  } catch (error) {
+    console.error("Error resuming subscription:", error);
+    return { error: "Failed to resume subscription" };
+  }
+}
+
+export async function changePlan(newPlan: "MONTHLY" | "YEARLY") {
+  try {
+    const session = await auth();
+
+    if (!session?.user) {
+      return { error: "Unauthorized" };
+    }
+
+    const subscription = await db.subscription.findFirst({
+      where: {
+        userId: session.user.id,
+        status: "ACTIVE",
+      },
+    });
+
+    if (!subscription) {
+      return { error: "No active subscription found" };
+    }
+
+    if (!subscription.stripeSubscriptionId) {
+      return { error: "Stripe subscription ID not found" };
+    }
+
+    const newPlanDetails = STRIPE_PLANS[newPlan];
+
+    if (!newPlanDetails.priceId) {
+      return { error: "Price ID not configured for this plan" };
+    }
+
+    // Get current subscription from Stripe
+    const stripeSubscription = await stripe.subscriptions.retrieve(
+      subscription.stripeSubscriptionId
+    );
+
+    // Update subscription with new price
+    await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+      items: [
+        {
+          id: stripeSubscription.items.data[0].id,
+          price: newPlanDetails.priceId,
+        },
+      ],
+      proration_behavior: "always_invoice",
+    });
+
+    // Update database
+    await db.subscription.update({
+      where: { id: subscription.id },
+      data: {
+        plan: newPlan,
+      },
+    });
+
+    revalidatePath("/profile");
+    revalidatePath("/profile/billing");
+    return { success: true };
+  } catch (error) {
+    console.error("Error changing plan:", error);
+    return { error: "Failed to change plan" };
+  }
+}
+
+export async function getBillingData() {
+  try {
+    const session = await auth();
+
+    if (!session?.user) {
+      return { error: "Unauthorized" };
+    }
+
+    // Get user's subscription
+    const subscription = await db.subscription.findFirst({
+      where: {
+        userId: session.user.id,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    let paymentMethods: import("stripe").Stripe.PaymentMethod[] = [];
+    let invoices: import("stripe").Stripe.Invoice[] = [];
+    let defaultPaymentMethod: string | null = null;
+
+    if (subscription?.stripeCustomerId) {
+      try {
+        // Get payment methods
+        const paymentMethodsList = await stripe.paymentMethods.list({
+          customer: subscription.stripeCustomerId,
+          type: "card",
+        });
+        paymentMethods = paymentMethodsList.data;
+
+        // Get default payment method from customer
+        const customer = await stripe.customers.retrieve(
+          subscription.stripeCustomerId
+        );
+        if (customer && !customer.deleted) {
+          defaultPaymentMethod = customer.invoice_settings.default_payment_method as string | null;
+        }
+
+        // Get invoices
+        const invoicesList = await stripe.invoices.list({
+          customer: subscription.stripeCustomerId,
+          limit: 12,
+        });
+        invoices = invoicesList.data;
+      } catch (error) {
+        console.error("Error fetching Stripe data:", error);
+      }
+    }
+
+    return {
+      subscription,
+      paymentMethods,
+      invoices,
+      defaultPaymentMethod,
+    };
+  } catch (error) {
+    console.error("Error fetching billing data:", error);
+    return { error: "Failed to fetch billing data" };
+  }
+}
+
+export async function addPaymentMethod() {
+  try {
+    const session = await auth();
+
+    if (!session?.user) {
+      return { error: "Unauthorized" };
+    }
+
+    const subscription = await db.subscription.findFirst({
+      where: {
+        userId: session.user.id,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    let customerId = subscription?.stripeCustomerId;
+
+    // Create customer if doesn't exist
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: session.user.email,
+        metadata: {
+          userId: session.user.id,
+        },
+      });
+      customerId = customer.id;
+
+      // Update or create subscription record
+      if (subscription) {
+        await db.subscription.update({
+          where: { id: subscription.id },
+          data: { stripeCustomerId: customerId },
+        });
+      } else {
+        await db.subscription.create({
+          data: {
+            userId: session.user.id,
+            stripeCustomerId: customerId,
+            plan: "FREE",
+            status: "ACTIVE",
+          },
+        });
+      }
+    }
+
+    // Create SetupIntent for adding payment method
+    const setupIntent = await stripe.setupIntents.create({
+      customer: customerId,
+      payment_method_types: ["card"],
+    });
+
+    return { clientSecret: setupIntent.client_secret };
+  } catch (error) {
+    console.error("Error creating setup intent:", error);
+    return { error: "Failed to create setup intent" };
+  }
+}
+
+export async function removePaymentMethod(paymentMethodId: string) {
+  try {
+    const session = await auth();
+
+    if (!session?.user) {
+      return { error: "Unauthorized" };
+    }
+
+    await stripe.paymentMethods.detach(paymentMethodId);
+
+    revalidatePath("/profile/billing");
+    return { success: true };
+  } catch (error) {
+    console.error("Error removing payment method:", error);
+    return { error: "Failed to remove payment method" };
+  }
+}
+
+export async function setDefaultPaymentMethod(paymentMethodId: string) {
+  try {
+    const session = await auth();
+
+    if (!session?.user) {
+      return { error: "Unauthorized" };
+    }
+
+    const subscription = await db.subscription.findFirst({
+      where: {
+        userId: session.user.id,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    if (!subscription?.stripeCustomerId) {
+      return { error: "No customer found" };
+    }
+
+    // Update customer's default payment method
+    await stripe.customers.update(subscription.stripeCustomerId, {
+      invoice_settings: {
+        default_payment_method: paymentMethodId,
+      },
+    });
+
+    revalidatePath("/profile/billing");
+    return { success: true };
+  } catch (error) {
+    console.error("Error setting default payment method:", error);
+    return { error: "Failed to set default payment method" };
   }
 }

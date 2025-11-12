@@ -77,7 +77,8 @@ export function Sidebar({ user }: SidebarProps) {
       {/* Navigation */}
       <nav className="flex-1 space-y-1 p-4">
         {navigation.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive = pathname === item.href || 
+            (item.href.startsWith("/profile") && pathname.startsWith(item.href));
           return (
             <Link
               key={item.name}
