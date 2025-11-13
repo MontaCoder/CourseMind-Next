@@ -18,7 +18,8 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { appName, FreeType, FreeCost, MonthType, MonthCost, YearType, YearCost } from "@/lib/constants";
+import { appName } from "@/lib/constants";
+import { STRIPE_PLANS } from "@/lib/stripe-plans";
 import { useState, useEffect } from "react";
 
 const stats = [
@@ -121,8 +122,8 @@ const testimonials = [
 
 const plans = [
   {
-    name: FreeType,
-    price: FreeCost,
+    name: STRIPE_PLANS.FREE.name,
+    price: `$${STRIPE_PLANS.FREE.price}`,
     features: [
       "Generate 5 Sub-Topics",
       "Lifetime access",
@@ -133,8 +134,8 @@ const plans = [
     billing: "forever",
   },
   {
-    name: MonthType,
-    price: MonthCost,
+    name: STRIPE_PLANS.MONTHLY.name,
+    price: `$${STRIPE_PLANS.MONTHLY.price}`,
     features: [
       "Generate 10 Sub-Topics",
       "1 Month Access",
@@ -145,11 +146,11 @@ const plans = [
       "Video & Theory Course",
     ],
     featured: true,
-    billing: "monthly",
+    billing: "month",
   },
   {
-    name: YearType,
-    price: YearCost,
+    name: STRIPE_PLANS.YEARLY.name,
+    price: `$${STRIPE_PLANS.YEARLY.price}`,
     features: [
       "Generate 10 Sub-Topics",
       "1 Year Access",
@@ -160,7 +161,7 @@ const plans = [
       "Video & Theory Course",
     ],
     featured: false,
-    billing: "yearly",
+    billing: "year",
   },
 ];
 

@@ -1,12 +1,5 @@
 export const appName = "CourseMind";
 
-// Pricing
-export const FreeType = "Free";
-export const FreeCost = "$0";
-export const MonthType = "Pro";
-export const MonthCost = "$5";
-export const YearType = "Enterprise";
-export const YearCost = "$49";
 
 // Supported languages
 export const LANGUAGES = [
