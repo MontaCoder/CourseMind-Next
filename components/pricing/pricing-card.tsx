@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Check, Loader2, Sparkles } from "lucide-react";
-import { STRIPE_PLANS, type StripePlan } from "@/lib/stripe";
+import { STRIPE_PLANS, type StripePlan } from "@/lib/stripe-plans";
 import { createCheckoutSession } from "@/actions/stripe";
 
 interface PricingCardProps {
