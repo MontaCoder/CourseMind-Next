@@ -1,12 +1,19 @@
-export const appName = "CourseMind";
+/**
+ * @deprecated This file has been replaced by lib/config/constants.ts
+ * Imports from here are maintained for backward compatibility
+ * Please update your imports to use '@/lib/config/constants' instead
+ */
 
-
-// Supported languages
-export const LANGUAGES = [
-  "English", "Spanish", "French", "German", "Italian", "Portuguese", "Russian",
-  "Chinese", "Japanese", "Korean", "Arabic", "Hindi", "Bengali", "Turkish",
-  "Vietnamese", "Polish", "Ukrainian", "Romanian", "Dutch", "Greek", "Czech",
-  "Swedish", "Hungarian", "Thai", "Indonesian", "Hebrew", "Danish", "Finnish",
-  "Norwegian", "Filipino", "Malay", "Persian", "Urdu", "Swahili", "Tamil",
-  "Telugu", "Marathi", "Gujarati", "Kannada"
-];
+export {
+  APP_CONFIG,
+  appName,
+  SUPPORTED_LANGUAGES,
+  LANGUAGES,
+  STRIPE_PLANS,
+  COURSE_CONFIG,
+  getCourseLimit,
+  getCourseType,
+  getPlanPrice,
+  type SupportedLanguage,
+  type StripePlan,
+} from "./config/constants";
