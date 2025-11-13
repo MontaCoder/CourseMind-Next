@@ -1,7 +1,8 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { stripe, STRIPE_PLANS } from "@/lib/stripe";
+import { stripe } from "@/lib/stripe";
+import { STRIPE_PLANS } from "@/lib/stripe-plans";
 import { db } from "@/lib/db";
 import { sendEmail, emailTemplates } from "@/lib/email";
 
