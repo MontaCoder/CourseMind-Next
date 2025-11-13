@@ -2,7 +2,8 @@
 
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { stripe, STRIPE_PLANS } from "@/lib/stripe";
+import { stripe } from "@/lib/stripe";
+import { STRIPE_PLANS } from "@/lib/stripe-plans";
 import { revalidatePath } from "next/cache";
 
 export async function createCheckoutSession(plan: "MONTHLY" | "YEARLY") {
@@ -19,15 +20,18 @@ export async function createCheckoutSession(plan: "MONTHLY" | "YEARLY") {
       return { error: "Price ID not configured for this plan" };
     }
 
-    // Check if user already has an active subscription
-    const existingSubscription = await db.subscription.findFirst({
+    // Check if user already has an active paid subscription
+    const existingPaidSubscription = await db.subscription.findFirst({
       where: {
         userId: session.user.id,
         status: "ACTIVE",
+        plan: {
+          in: ["MONTHLY", "YEARLY"],
+        },
       },
     });
 
-    if (existingSubscription) {
+    if (existingPaidSubscription) {
       return { error: "You already have an active subscription" };
     }
 
