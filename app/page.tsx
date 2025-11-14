@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Logo } from "@/components/layout/logo";
 import {
   ArrowRight,
   Sparkles,
@@ -18,8 +19,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { appName } from "@/lib/constants";
-import { STRIPE_PLANS } from "@/lib/stripe-plans";
+import { appName, STRIPE_PLANS } from "@/lib/constants";
 import { useState, useEffect } from "react";
 
 const stats = [
@@ -188,14 +188,7 @@ export default function Home() {
         }`}
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-6">
-          <Link href="/" className="group flex items-center space-x-3">
-            <div className="relative flex items-center gap-2">
-              <Image src="/logo.svg" alt="CourseMind Logo" width={32} height={32} className="drop-shadow-sm transition-transform group-hover:scale-105" />
-              <span className="font-display text-xl md:text-2xl font-bold tracking-tight bg-gradient-to-r from-primary to-accent text-transparent bg-clip-text">
-                {appName}
-              </span>
-            </div>
-          </Link>
+          <Logo href="/" size="large" />
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-2 xl:space-x-4">
@@ -610,21 +603,8 @@ export default function Home() {
       <footer className="border-t border-border/60 bg-muted/30">
         <div className="mx-auto max-w-7xl px-6 lg:px-10 py-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
-            <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="relative">
-                  <Image 
-                    src="/logo.svg" 
-                    alt="CourseMind Logo" 
-                    width={40} 
-                    height={40} 
-                    className="drop-shadow-sm"
-                  />
-                </div>
-                <span className="font-display text-xl font-bold text-foreground bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  {appName}
-                </span>
-              </div>
+            <div className="col-span-2 md:col-span-1 space-y-4">
+              <Logo href="/" size="large" />
               <p className="text-sm text-muted-foreground">
                 AI-powered course creation platform for modern educators.
               </p>
