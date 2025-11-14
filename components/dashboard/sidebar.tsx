@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
@@ -15,8 +14,8 @@ import {
   Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { appName } from "@/lib/constants";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Logo } from "@/components/layout/logo";
 import {
   Avatar,
   AvatarFallback,
@@ -67,11 +66,8 @@ export function Sidebar({ user }: SidebarProps) {
   return (
     <div className="flex h-full w-64 flex-col border-r border-border/60 bg-card/50 backdrop-blur">
       {/* Logo */}
-      <div className="flex h-16 items-center gap-3 border-b border-border/60 px-6">
-        <Image src="/logo.svg" alt="CourseMind Logo" width={32} height={32} className="drop-shadow-sm" />
-        <span className="text-lg font-bold bg-gradient-to-r from-primary to-accent text-transparent bg-clip-text">
-          {appName}
-        </span>
+      <div className="flex h-16 items-center border-b border-border/60 px-6">
+        <Logo href="/dashboard" size="medium" />
       </div>
 
       {/* Navigation */}

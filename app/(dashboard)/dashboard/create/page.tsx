@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2, Sparkles, BookOpen, Languages, Hash } from "lucide-react";
 import { createCourse } from "@/actions/course";
-import { SUPPORTED_LANGUAGES } from "@/lib/languages";
+import { SUPPORTED_LANGUAGES } from "@/lib/constants";
 
 export default function CreateCoursePage() {
   const router = useRouter();
@@ -52,8 +52,10 @@ export default function CreateCoursePage() {
       }
 
       // Redirect to the new course
-      router.push(`/dashboard/courses/${result.courseId}`);
-      router.refresh();
+      if ("courseId" in result && result.courseId) {
+        router.push(`/dashboard/courses/${result.courseId}`);
+        router.refresh();
+      }
     } catch (error) {
       setError("Something went wrong. Please try again.");
       setIsLoading(false);
