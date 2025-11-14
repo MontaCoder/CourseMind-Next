@@ -36,7 +36,7 @@ export async function createCourse(formData: FormData) {
     const courseCount = user._count.courses;
     const courseLimit = getCourseLimit(subscriptionPlan);
 
-    if (courseCount >= courseLimit) {
+    if (session.user.role !== "ADMIN" && courseCount >= courseLimit) {
       return {
         error: `You have reached your course limit. Please upgrade your plan to create more courses.`,
       };
