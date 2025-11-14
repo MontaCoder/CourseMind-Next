@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -28,6 +29,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Search, MoreHorizontal, Eye, Trash, Shield } from "lucide-react";
 import Link from "next/link";
+import { DeleteConfirmationDialog } from "@/components/admin/shared/delete-confirmation-dialog";
+import { deleteUser } from "@/actions/admin";
 
 interface User {
   id: string;
@@ -51,6 +54,7 @@ interface UserSearchProps {
 
 export function UserSearch({ users }: UserSearchProps) {
   const [search, setSearch] = useState("");
+  const router = useRouter();
 
   const filteredUsers = users.filter(
     (user) =>
@@ -145,10 +149,20 @@ export function UserSearch({ users }: UserSearchProps) {
                             View Details
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600">
-                          <Trash className="w-4 h-4 mr-2" />
-                          Delete User
-                        </DropdownMenuItem>
+                        <DeleteConfirmationDialog
+                          title="Delete User"
+                          description={`Are you sure you want to delete ${user.name || user.email}? This will permanently delete all their courses, content, and data. This action cannot be undone.`}
+                          onConfirm={() => deleteUser(user.id)}
+                          onSuccess={() => router.refresh()}
+                        >
+                          <DropdownMenuItem
+                            className="text-red-600"
+                            onSelect={(e) => e.preventDefault()}
+                          >
+                            <Trash className="w-4 h-4 mr-2" />
+                            Delete User
+                          </DropdownMenuItem>
+                        </DeleteConfirmationDialog>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

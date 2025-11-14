@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -28,6 +29,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Search, MoreHorizontal, Eye, Trash, Globe, Lock } from "lucide-react";
 import Link from "next/link";
+import { DeleteConfirmationDialog } from "@/components/admin/shared/delete-confirmation-dialog";
+import { deleteCourseAsAdmin } from "@/actions/admin";
 
 interface Course {
   id: string;
@@ -54,6 +57,7 @@ interface CourseSearchProps {
 
 export function CourseSearch({ courses }: CourseSearchProps) {
   const [search, setSearch] = useState("");
+  const router = useRouter();
 
   const filteredCourses = courses.filter(
     (course) =>
@@ -153,10 +157,20 @@ export function CourseSearch({ courses }: CourseSearchProps) {
                             View Course
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600">
-                          <Trash className="w-4 h-4 mr-2" />
-                          Delete Course
-                        </DropdownMenuItem>
+                        <DeleteConfirmationDialog
+                          title="Delete Course"
+                          description={`Are you sure you want to delete "${course.name}"? This will also delete all chapters, topics, and quizzes. This action cannot be undone.`}
+                          onConfirm={() => deleteCourseAsAdmin(course.id)}
+                          onSuccess={() => router.refresh()}
+                        >
+                          <DropdownMenuItem
+                            className="text-red-600"
+                            onSelect={(e) => e.preventDefault()}
+                          >
+                            <Trash className="w-4 h-4 mr-2" />
+                            Delete Course
+                          </DropdownMenuItem>
+                        </DeleteConfirmationDialog>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

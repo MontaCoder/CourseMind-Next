@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -28,6 +29,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Search, MoreHorizontal, Edit, Trash, Eye } from "lucide-react";
 import Link from "next/link";
+import { DeleteConfirmationDialog } from "@/components/admin/shared/delete-confirmation-dialog";
+import { deleteBlogPostAsAdmin } from "@/actions/admin";
 
 interface BlogPost {
   id: string;
@@ -52,6 +55,7 @@ interface BlogManagementTableProps {
 
 export function BlogManagementTable({ posts }: BlogManagementTableProps) {
   const [search, setSearch] = useState("");
+  const router = useRouter();
 
   const filteredPosts = posts.filter(
     (post) =>
@@ -150,10 +154,20 @@ export function BlogManagementTable({ posts }: BlogManagementTableProps) {
                             Edit
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600">
-                          <Trash className="w-4 h-4 mr-2" />
-                          Delete
-                        </DropdownMenuItem>
+                        <DeleteConfirmationDialog
+                          title="Delete Blog Post"
+                          description={`Are you sure you want to delete "${post.title}"? This action cannot be undone.`}
+                          onConfirm={() => deleteBlogPostAsAdmin(post.id)}
+                          onSuccess={() => router.refresh()}
+                        >
+                          <DropdownMenuItem
+                            className="text-red-600"
+                            onSelect={(e) => e.preventDefault()}
+                          >
+                            <Trash className="w-4 h-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DeleteConfirmationDialog>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
