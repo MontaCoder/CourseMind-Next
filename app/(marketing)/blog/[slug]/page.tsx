@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { db } from "@/lib/db";
-import { Calendar, Clock, User, ArrowLeft, Share2 } from "lucide-react";
+import { Calendar, Clock, User, ArrowLeft } from "lucide-react";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -119,29 +119,6 @@ export default async function BlogPostPage({
           <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
             {post.excerpt}
           </p>
-
-          {/* Share Button */}
-          <div className="flex gap-2 mb-8 pb-8 border-b">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                if (navigator.share) {
-                  navigator.share({
-                    title: post.title,
-                    text: post.excerpt,
-                    url: window.location.href,
-                  });
-                } else {
-                  navigator.clipboard.writeText(window.location.href);
-                  alert('Link copied to clipboard!');
-                }
-              }}
-            >
-              <Share2 className="w-4 h-4 mr-2" />
-              Share
-            </Button>
-          </div>
 
           {/* Content */}
           <div
