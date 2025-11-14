@@ -3,7 +3,7 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
-import { STRIPE_PLANS } from "@/lib/stripe-plans";
+import { STRIPE_PLANS } from "@/lib/constants";
 import { revalidatePath } from "next/cache";
 
 export async function createCheckoutSession(plan: "MONTHLY" | "YEARLY") {

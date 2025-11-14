@@ -1,10 +1,12 @@
 "use server";
 
 import { z } from "zod";
-import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { generateCourseOutline, generateQuizQuestions } from "@/lib/gemini";
-import { SUPPORTED_LANGUAGES } from "@/lib/languages";
+import { SUPPORTED_LANGUAGES, getCourseLimit, getCourseType } from "@/lib/config/constants";
+import { requireAuth, requireCourseOwnership } from "@/lib/actions/auth-helpers";
+import { withLegacyActionHandler } from "@/lib/actions/error-handler";
+import { getUserSubscriptionStatus, getUserPlan } from "@/lib/queries/subscription-queries";
 
 const createCourseSchema = z.object({
   topic: z.string().min(3, "Topic must be at least 3 characters"),
@@ -13,12 +15,8 @@ const createCourseSchema = z.object({
 });
 
 export async function createCourse(formData: FormData) {
-  try {
-    const session = await auth();
-
-    if (!session?.user) {
-      return { error: "Unauthorized" };
-    }
+  return withLegacyActionHandler(async () => {
+    const session = await requireAuth();
 
     const validated = createCourseSchema.parse({
       topic: formData.get("topic"),
@@ -27,35 +25,18 @@ export async function createCourse(formData: FormData) {
     });
 
     // Get user's subscription and course count
-    const user = await db.user.findUnique({
-      where: { id: session.user.id },
-      include: {
-        subscriptions: {
-          where: { status: "ACTIVE" },
-          orderBy: { createdAt: "desc" },
-          take: 1,
-        },
-        _count: {
-          select: { courses: true },
-        },
-      },
-    });
+    const user = await getUserSubscriptionStatus(session.user.id);
 
     if (!user) {
       return { error: "User not found" };
     }
 
     // Check subscription limits
-    const subscriptionPlan = (user.subscriptions[0]?.plan || "FREE") as "FREE" | "MONTHLY" | "YEARLY";
+    const subscriptionPlan = await getUserPlan(session.user.id);
     const courseCount = user._count.courses;
+    const courseLimit = getCourseLimit(subscriptionPlan);
 
-    const limits: Record<"FREE" | "MONTHLY" | "YEARLY", number> = {
-      FREE: 3,
-      MONTHLY: 50,
-      YEARLY: 50,
-    };
-
-    if (courseCount >= limits[subscriptionPlan]) {
+    if (courseCount >= courseLimit) {
       return {
         error: `You have reached your course limit. Please upgrade your plan to create more courses.`,
       };
@@ -69,7 +50,7 @@ export async function createCourse(formData: FormData) {
     );
 
     // Determine course type based on subscription
-    const courseType = subscriptionPlan === "FREE" ? "TEXT_IMAGE" : "VIDEO_TEXT";
+    const courseType = getCourseType(subscriptionPlan);
 
     // Create course in database with chapters and topics (lazy-load content)
     const course = await db.course.create({
@@ -109,34 +90,13 @@ export async function createCourse(formData: FormData) {
     });
 
     return { success: true, courseId: course.id };
-  } catch (error) {
-    console.error("Error creating course:", error);
-    if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message };
-    }
-    return { error: "Failed to create course. Please try again." };
-  }
+  }, "Failed to create course. Please try again.");
 }
 
 export async function updateCourseProgress(courseId: string, progress: number) {
-  try {
-    const session = await auth();
-
-    if (!session?.user) {
-      return { error: "Unauthorized" };
-    }
-
-    // Verify course ownership
-    const course = await db.course.findFirst({
-      where: {
-        id: courseId,
-        userId: session.user.id,
-      },
-    });
-
-    if (!course) {
-      return { error: "Course not found" };
-    }
+  return withLegacyActionHandler(async () => {
+    const session = await requireAuth();
+    await requireCourseOwnership(courseId, session.user.id);
 
     // Update progress
     await db.course.update({
@@ -145,31 +105,13 @@ export async function updateCourseProgress(courseId: string, progress: number) {
     });
 
     return { success: true };
-  } catch (error) {
-    console.error("Error updating course progress:", error);
-    return { error: "Failed to update progress" };
-  }
+  }, "Failed to update progress");
 }
 
 export async function deleteCourse(courseId: string) {
-  try {
-    const session = await auth();
-
-    if (!session?.user) {
-      return { error: "Unauthorized" };
-    }
-
-    // Verify course ownership
-    const course = await db.course.findFirst({
-      where: {
-        id: courseId,
-        userId: session.user.id,
-      },
-    });
-
-    if (!course) {
-      return { error: "Course not found" };
-    }
+  return withLegacyActionHandler(async () => {
+    const session = await requireAuth();
+    await requireCourseOwnership(courseId, session.user.id);
 
     // Delete course (cascade will handle chapters, notes, exams)
     await db.course.delete({
@@ -177,44 +119,36 @@ export async function deleteCourse(courseId: string) {
     });
 
     return { success: true };
-  } catch (error) {
-    console.error("Error deleting course:", error);
-    return { error: "Failed to delete course" };
-  }
+  }, "Failed to delete course");
 }
 
 export async function generateChapterQuiz(
   courseId: string,
   chapterId: string
 ) {
-  try {
-    const session = await auth();
+  return withLegacyActionHandler(async () => {
+    const session = await requireAuth();
 
-    if (!session?.user) {
-      return { error: "Unauthorized" };
-    }
+    // Verify course ownership
+    await requireCourseOwnership(courseId, session.user.id);
 
-    // Get course and chapter with verification
-    const course = await db.course.findFirst({
+    // Get chapter with topics and course
+    const chapter = await db.chapter.findFirst({
       where: {
-        id: courseId,
-        userId: session.user.id,
+        id: chapterId,
+        courseId,
       },
       include: {
-        chapters: {
-          where: { id: chapterId },
-          include: {
-            topics: true, // Include topics relation
-          },
-        },
+        topics: true,
+        course: true,
       },
     });
 
-    if (!course || course.chapters.length === 0) {
-      return { error: "Course or chapter not found" };
+    if (!chapter) {
+      return { error: "Chapter not found" };
     }
 
-    const chapter = course.chapters[0];
+    const course = chapter.course;
 
     // Check if quiz already exists
     const existingQuiz = await db.exam.findFirst({
@@ -252,22 +186,15 @@ export async function generateChapterQuiz(
     });
 
     return { success: true, examId: exam.id, questions };
-  } catch (error) {
-    console.error("Error generating chapter quiz:", error);
-    return { error: "Failed to generate quiz. Please try again." };
-  }
+  }, "Failed to generate quiz. Please try again.");
 }
 
 export async function submitQuizAnswers(
   examId: string,
   answers: number[]
 ) {
-  try {
-    const session = await auth();
-
-    if (!session?.user) {
-      return { error: "Unauthorized" };
-    }
+  return withLegacyActionHandler(async () => {
+    const session = await requireAuth();
 
     // Get exam with verification
     const exam = await db.exam.findFirst({
@@ -308,8 +235,5 @@ export async function submitQuizAnswers(
       correctCount,
       totalQuestions: questions.length,
     };
-  } catch (error) {
-    console.error("Error submitting quiz answers:", error);
-    return { error: "Failed to submit answers" };
-  }
+  }, "Failed to submit answers");
 }
