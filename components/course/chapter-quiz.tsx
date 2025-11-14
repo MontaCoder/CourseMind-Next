@@ -56,7 +56,7 @@ export function ChapterQuiz({
         return;
       }
 
-      if (result.examId && result.questions) {
+      if ("examId" in result && "questions" in result && result.examId && result.questions) {
         setExamId(result.examId);
         setQuestions(result.questions);
         setAnswers(new Array(result.questions.length).fill(null));
@@ -91,7 +91,7 @@ export function ChapterQuiz({
 
       if (result.error) {
         setError(result.error);
-      } else if (result.score !== undefined) {
+      } else if ("score" in result && result.score !== undefined) {
         setScore(result.score);
         setQuizState("completed");
         setShowResults(true);

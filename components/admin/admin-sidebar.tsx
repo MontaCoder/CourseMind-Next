@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/layout/logo";
 import {
   LayoutDashboard,
   Users,
@@ -70,9 +71,7 @@ export function AdminSidebar() {
     <aside className="w-64 bg-card border-r flex flex-col">
       {/* Logo */}
       <div className="h-16 flex items-center px-6 border-b">
-        <Link href="/admin" className="text-xl font-bold gradient-text">
-          CourseMind Admin
-        </Link>
+        <Logo href="/admin" size="medium" showImage={true} showText={true} />
       </div>
 
       {/* Navigation */}
