@@ -43,9 +43,9 @@ export default async function CoursesPage() {
   const courses = await getUserCourses(session.user.id);
 
   return (
-    <div className="space-y-8">
+    <div className="max-w-5xl mx-auto space-y-8 pt-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-foreground">My Courses</h1>
           <p className="text-muted-foreground mt-2">

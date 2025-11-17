@@ -52,7 +52,7 @@ export default async function CoursePage({
   const existingCertificate = course.certificates?.[0] || null;
 
   return (
-    <div className="space-y-8">
+    <div className="max-w-5xl mx-auto space-y-10 pt-6">
       {/* Course Header */}
       <CourseHeader course={course} />
 
