@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Sparkles, BookOpen, Languages, Hash } from "lucide-react";
+import { Loader2, Sparkles, BookOpen, Languages } from "lucide-react";
 import { createCourse } from "@/actions/course";
 import { SUPPORTED_LANGUAGES } from "@/lib/constants";
 import type { CourseType } from "@/types/course";
@@ -67,16 +67,16 @@ export default function CreateCoursePage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-xl mx-auto space-y-8 pt-10">
       {/* Header */}
-      <div>
+      <div className="text-center">
         <h1 className="text-3xl font-bold text-foreground">Create New Course</h1>
         <p className="text-muted-foreground mt-2">
           Generate an AI-powered course on any topic in your preferred language
         </p>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-2">
+      <div>
         {/* Form Section */}
         <Card>
           <CardHeader>
@@ -132,9 +132,6 @@ export default function CreateCoursePage() {
                     minLength={3}
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Enter any topic you want to learn about
-                </p>
               </div>
 
               {/* Language Selection */}
@@ -166,38 +163,22 @@ export default function CreateCoursePage() {
 
               {/* Chapter Count */}
               <div className="space-y-2">
-                <Label htmlFor="chapterCount">Number of Chapters</Label>
-                <div className="space-y-4">
-                  <div className="relative">
-                    <Hash className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="chapterCount"
-                      name="chapterCount"
-                      type="number"
-                      className="pl-10"
-                      value={chapterCount}
-                      onChange={(e) =>
-                        setChapterCount(parseInt(e.target.value) || 5)
-                      }
-                      min={3}
-                      max={10}
-                      required
-                      disabled={isLoading}
-                    />
-                  </div>
-                  <input
-                    type="range"
-                    min={3}
-                    max={10}
-                    value={chapterCount}
-                    onChange={(e) => setChapterCount(parseInt(e.target.value))}
-                    disabled={isLoading}
-                    className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-                  />
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="chapterCount">Number of Chapters</Label>
+                  <span className="text-xs text-muted-foreground">
+                    {chapterCount} chapters
+                  </span>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Choose between 3 and 10 chapters
-                </p>
+                <input
+                  id="chapterCount"
+                  type="range"
+                  min={3}
+                  max={10}
+                  value={chapterCount}
+                  onChange={(e) => setChapterCount(parseInt(e.target.value))}
+                  disabled={isLoading}
+                  className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                />
               </div>
 
               {/* Submit Button */}
@@ -221,74 +202,6 @@ export default function CreateCoursePage() {
               </Button>
             </CardContent>
           </form>
-        </Card>
-
-        {/* Preview Section */}
-        <Card className="bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
-          <CardHeader>
-            <CardTitle>What You'll Get</CardTitle>
-            <CardDescription>
-              AI-powered course features
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-4">
-              <div className="flex gap-3">
-                <div className="rounded-full bg-primary/10 p-2 h-fit">
-                  <BookOpen className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <h4 className="font-medium text-sm">Structured Chapters</h4>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Well-organized content progressing from basics to advanced
-                    topics
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-3">
-                <div className="rounded-full bg-primary/10 p-2 h-fit">
-                  <Sparkles className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <h4 className="font-medium text-sm">AI-Generated Content</h4>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Comprehensive course material created by advanced AI
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-3">
-                <div className="rounded-full bg-primary/10 p-2 h-fit">
-                  <Languages className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <h4 className="font-medium text-sm">Multi-language Support</h4>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Learn in your preferred language from 39+ options
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {topic && (
-              <div className="mt-6 p-4 rounded-lg bg-background/50 border">
-                <p className="text-xs text-muted-foreground mb-2">Preview:</p>
-                <p className="font-medium text-sm">{topic}</p>
-                <div className="flex gap-2 mt-2 text-xs text-muted-foreground">
-                  <span className="px-2 py-1 bg-primary/10 rounded">
-                    {language}
-                  </span>
-                  <span className="px-2 py-1 bg-primary/10 rounded">
-                    {chapterCount} chapters
-                  </span>
-                  <span className="px-2 py-1 bg-primary/10 rounded">
-                    {courseType === "TEXT_IMAGE" ? "Text + Image" : "Video + Text"}
-                  </span>
-                </div>
-              </div>
-            )}
-          </CardContent>
         </Card>
       </div>
 

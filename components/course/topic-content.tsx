@@ -218,6 +218,9 @@ export function TopicContent({
       {topic.theory && (
         <Card>
           <CardContent className="p-6">
+            <p className="text-xs text-muted-foreground mb-3">
+              AI-generated lesson content tailored to this topic
+            </p>
             <div
               className="prose prose-slate dark:prose-invert max-w-none
                 prose-headings:font-bold prose-headings:text-foreground
@@ -242,7 +245,7 @@ export function TopicContent({
         <Card>
           <CardContent className="p-12 text-center">
             <p className="text-muted-foreground mb-4">
-              Content couldn't be generated. Please try again.
+              We couldn't load this lesson yet. Generate it with AI to get a full explanation.
             </p>
             <Button onClick={handleGenerateContent} disabled={isLoading}>
               {isLoading ? (
