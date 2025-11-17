@@ -53,8 +53,9 @@ export default function CreateCoursePage() {
 
       // Redirect to the new course
       if ("courseId" in result && result.courseId) {
-        router.push(`/dashboard/courses/${result.courseId}`);
-        router.refresh();
+        setIsLoading(false);
+        await router.push(`/dashboard/courses/${result.courseId}`);
+        return;
       }
     } catch (error) {
       setError("Something went wrong. Please try again.");
