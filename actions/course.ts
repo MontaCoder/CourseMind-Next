@@ -12,6 +12,7 @@ const createCourseSchema = z.object({
   topic: z.string().min(3, "Topic must be at least 3 characters"),
   language: z.enum(SUPPORTED_LANGUAGES as unknown as [string, ...string[]]),
   chapterCount: z.number().min(3).max(10),
+  courseType: z.enum(["TEXT_IMAGE", "VIDEO_TEXT"] as const),
 });
 
 export async function createCourse(formData: FormData) {
@@ -22,6 +23,7 @@ export async function createCourse(formData: FormData) {
       topic: formData.get("topic"),
       language: formData.get("language"),
       chapterCount: parseInt(formData.get("chapterCount") as string),
+      courseType: formData.get("courseType"),
     });
 
     // Get user's subscription and course count
@@ -49,9 +51,6 @@ export async function createCourse(formData: FormData) {
       validated.chapterCount
     );
 
-    // Determine course type based on subscription
-    const courseType = getCourseType(subscriptionPlan);
-
     // Create course in database with chapters and topics (lazy-load content)
     const course = await db.course.create({
       data: {
@@ -59,7 +58,7 @@ export async function createCourse(formData: FormData) {
         name: courseOutline.name,
         description: courseOutline.description,
         language: validated.language,
-        courseType,
+        courseType: validated.courseType,
         progress: 0,
         chapters: {
           create: courseOutline.chapters.map((chapter, chapterIndex) => ({
