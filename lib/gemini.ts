@@ -8,6 +8,43 @@ const genAI = process.env.GEMINI_API_KEY
   ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
   : null;
 
+const GEMINI_MODEL_NAME = "gemini-flash-latest";
+
+function getGeminiModel() {
+  if (!genAI) {
+    throw new Error(
+      "Gemini AI is not configured. Please set GEMINI_API_KEY in your environment variables."
+    );
+  }
+
+  return genAI.getGenerativeModel({ model: GEMINI_MODEL_NAME });
+}
+
+async function generateGeminiContent(prompt: string): Promise<string> {
+  const model = getGeminiModel();
+  const result = await model.generateContent(prompt);
+  const response = result.response;
+  return response.text();
+}
+
+function extractJsonObject<T>(text: string, errorMessage: string): T {
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error(errorMessage);
+  }
+
+  return JSON.parse(jsonMatch[0]) as T;
+}
+
+function extractJsonArray<T>(text: string, errorMessage: string): T[] {
+  const jsonMatch = text.match(/\[[\s\S]*\]/);
+  if (!jsonMatch) {
+    throw new Error(errorMessage);
+  }
+
+  return JSON.parse(jsonMatch[0]) as T[];
+}
+
 export interface TopicOutline {
   title: string;
   description: string;
@@ -43,14 +80,6 @@ export async function generateCourseOutline(
   language: string = "English",
   chapterCount: number = 5
 ): Promise<CourseOutline> {
-  if (!genAI) {
-    throw new Error(
-      "Gemini AI is not configured. Please set GEMINI_API_KEY in your environment variables."
-    );
-  }
-
-  const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
-
   const prompt = `Create a comprehensive course outline about "${topic}" in ${language}.
 
 Requirements:
@@ -82,17 +111,11 @@ Format your response as a JSON object with this exact structure:
 Respond ONLY with the JSON object, no additional text.`;
 
   try {
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    const text = response.text();
-
-    // Extract JSON from response (in case there's extra text)
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error("Failed to extract JSON from response");
-    }
-
-    const courseOutline: CourseOutline = JSON.parse(jsonMatch[0]);
+    const text = await generateGeminiContent(prompt);
+    const courseOutline = extractJsonObject<CourseOutline>(
+      text,
+      "Failed to extract JSON from response"
+    );
 
     // Validate structure
     if (!courseOutline.name || !courseOutline.chapters || courseOutline.chapters.length === 0) {
@@ -116,14 +139,6 @@ export async function generateQuizQuestions(
   questionCount: number = 5,
   language: string = "English"
 ): Promise<QuizQuestion[]> {
-  if (!genAI) {
-    throw new Error(
-      "Gemini AI is not configured. Please set GEMINI_API_KEY in your environment variables."
-    );
-  }
-
-  const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
-
   const prompt = `Generate ${questionCount} multiple-choice quiz questions for a chapter titled "${chapterTitle}" from the course "${courseName}" in ${language}.
 
 The chapter covers these topics:
@@ -150,17 +165,11 @@ Format your response as a JSON array with this exact structure:
 Respond ONLY with the JSON array, no additional text.`;
 
   try {
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    const text = response.text();
-
-    // Extract JSON from response
-    const jsonMatch = text.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) {
-      throw new Error("Failed to extract JSON from response");
-    }
-
-    const questions: QuizQuestion[] = JSON.parse(jsonMatch[0]);
+    const text = await generateGeminiContent(prompt);
+    const questions = extractJsonArray<QuizQuestion>(
+      text,
+      "Failed to extract JSON from response"
+    );
 
     // Validate structure
     if (!Array.isArray(questions) || questions.length === 0) {
@@ -185,14 +194,6 @@ export async function chatWithAI(
     topics?: string[];
   }
 ): Promise<string> {
-  if (!genAI) {
-    throw new Error(
-      "Gemini AI is not configured. Please set GEMINI_API_KEY in your environment variables."
-    );
-  }
-
-  const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
-
   let systemPrompt = "You are a helpful AI tutor assistant. ";
 
   if (courseContext) {
@@ -220,9 +221,7 @@ ${conversationHistory}
 Tutor:`;
 
   try {
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    return response.text();
+    return await generateGeminiContent(prompt);
   } catch (error) {
     console.error("Error in AI chat:", error);
     throw new Error("Failed to get response from AI. Please try again.");
@@ -236,14 +235,6 @@ export async function generateNoteSummary(
   noteContent: string,
   maxLength: number = 200
 ): Promise<string> {
-  if (!genAI) {
-    throw new Error(
-      "Gemini AI is not configured. Please set GEMINI_API_KEY in your environment variables."
-    );
-  }
-
-  const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
-
   const prompt = `Summarize the following course notes in ${maxLength} characters or less. Make it concise but informative:
 
 ${noteContent}
@@ -251,9 +242,7 @@ ${noteContent}
 Summary:`;
 
   try {
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    const summary = response.text().trim();
+    const summary = (await generateGeminiContent(prompt)).trim();
 
     // Truncate if needed
     return summary.length > maxLength
@@ -276,14 +265,6 @@ export async function generateTopicTheory(
   language: string = "English",
   videoTranscript?: string
 ): Promise<string> {
-  if (!genAI) {
-    throw new Error(
-      "Gemini AI is not configured. Please set GEMINI_API_KEY in your environment variables."
-    );
-  }
-
-  const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
-
   let prompt = `Generate comprehensive educational content about "${topicTitle}" from the chapter "${chapterTitle}" in ${language}.
 
 ${topicDescription ? `Topic Description: ${topicDescription}\n` : ""}`;
@@ -325,9 +306,7 @@ Make the content:
 Begin your response:`;
 
   try {
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    return response.text().trim();
+    return (await generateGeminiContent(prompt)).trim();
   } catch (error) {
     console.error("Error generating topic theory:", error);
     throw new Error("Failed to generate topic content. Please try again.");
