@@ -22,6 +22,7 @@ import {
 import { Loader2, Sparkles, BookOpen, Languages, Hash } from "lucide-react";
 import { createCourse } from "@/actions/course";
 import { SUPPORTED_LANGUAGES } from "@/lib/constants";
+import type { CourseType } from "@/types/course";
 
 export default function CreateCoursePage() {
   const router = useRouter();
@@ -31,6 +32,7 @@ export default function CreateCoursePage() {
   const [topic, setTopic] = useState("");
   const [language, setLanguage] = useState("English");
   const [chapterCount, setChapterCount] = useState(5);
+  const [courseType, setCourseType] = useState<CourseType>("TEXT_IMAGE");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -41,6 +43,7 @@ export default function CreateCoursePage() {
     formData.append("topic", topic);
     formData.append("language", language);
     formData.append("chapterCount", chapterCount.toString());
+    formData.append("courseType", courseType);
 
     try {
       const result = await createCourse(formData);
@@ -89,6 +92,27 @@ export default function CreateCoursePage() {
                   {error}
                 </div>
               )}
+
+              {/* Course Type */}
+              <div className="space-y-2">
+                <Label htmlFor="courseType">Course Type</Label>
+                <Select
+                  value={courseType}
+                  onValueChange={(value) => setCourseType(value as CourseType)}
+                  disabled={isLoading}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select course type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="TEXT_IMAGE">Text + Image</SelectItem>
+                    <SelectItem value="VIDEO_TEXT">Video + Text</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Choose how lessons should be delivered
+                </p>
+              </div>
 
               {/* Topic Input */}
               <div className="space-y-2">
@@ -257,6 +281,9 @@ export default function CreateCoursePage() {
                   </span>
                   <span className="px-2 py-1 bg-primary/10 rounded">
                     {chapterCount} chapters
+                  </span>
+                  <span className="px-2 py-1 bg-primary/10 rounded">
+                    {courseType === "TEXT_IMAGE" ? "Text + Image" : "Video + Text"}
                   </span>
                 </div>
               </div>
