@@ -2,10 +2,7 @@
 
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { generateTopicTheory } from "@/lib/gemini";
-import { searchVideos, getVideoTranscript } from "@/lib/youtube";
-import { searchImages } from "@/lib/unsplash";
-import { marked } from "marked";
+import { generateTopicContentForContext } from "@/lib/ai/topic-content";
 
 /**
  * Generate content for a topic (theory + video/image)
@@ -56,84 +53,14 @@ export async function generateTopicContent(topicId: string) {
     }
 
     const course = topic.chapter.course;
-    let theory = "";
-    let videoId: string | null = null;
-    let imageUrl: string | null = null;
 
-    // Generate content based on course type
-    if (course.courseType === "VIDEO_TEXT") {
-      // Video course: Find YouTube video first
-      try {
-        const videos = await searchVideos(
-          `${topic.title} ${topic.chapter.title} tutorial`,
-          1
-        );
-
-        if (videos && videos.length > 0) {
-          videoId = videos[0].id;
-
-          // Try to get transcript and summarize
-          try {
-            const transcript = await getVideoTranscript(videoId);
-            if (transcript && transcript.length > 0) {
-              // Concatenate transcript text
-              const transcriptText = transcript
-                .map((t) => t.text)
-                .join(" ")
-                .substring(0, 3000); // Limit to 3000 chars
-
-              // Generate theory from transcript
-              theory = await generateTopicTheory(
-                topic.title,
-                topic.description || "",
-                topic.chapter.title,
-                course.language,
-                transcriptText
-              );
-            }
-          } catch (transcriptError) {
-            console.warn("Could not get transcript, generating theory from scratch");
-          }
-        }
-      } catch (videoError) {
-        console.error("Error fetching video:", videoError);
-      }
-
-      // If no video or transcript, generate theory from scratch
-      if (!theory) {
-        theory = await generateTopicTheory(
-          topic.title,
-          topic.description || "",
-          topic.chapter.title,
-          course.language
-        );
-      }
-    } else {
-      // Image course: Generate theory and fetch image
-      theory = await generateTopicTheory(
-        topic.title,
-        topic.description || "",
-        topic.chapter.title,
-        course.language
-      );
-
-      // Fetch relevant image
-      try {
-        const images = await searchImages(
-          `${topic.title} ${topic.chapter.title} example`,
-          1
-        );
-
-        if (images && images.length > 0) {
-          imageUrl = images[0].url;
-        }
-      } catch (imageError) {
-        console.error("Error fetching image:", imageError);
-      }
-    }
-
-    // Convert markdown to HTML
-    const theoryHtml = marked(theory) as string;
+    const { theoryHtml, videoId, imageUrl } = await generateTopicContentForContext({
+      title: topic.title,
+      description: topic.description,
+      chapterTitle: topic.chapter.title,
+      language: course.language,
+      courseType: course.courseType,
+    });
 
     // Update topic in database
     const updatedTopic = await db.topic.update({
