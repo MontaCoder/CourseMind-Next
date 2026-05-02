@@ -1,10 +1,10 @@
 # CourseMind 🚀
 
-[![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat&logo=next.js)](https://nextjs.org)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?style=flat&logo=typescript)](https://typescriptlang.org)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-cyan?style=flat&logo=tailwind)](https://tailwindcss.com)
-[![Prisma](https://img.shields.io/badge/Prisma-6.2-5cc1a7?style=flat&logo=prisma)](https://prisma.io)
-[![Stripe](https://img.shields.io/badge/Stripe-17.7-green?style=flat&logo=stripe)](https://stripe.com)
+[![Next.js](https://img.shields.io/badge/Next.js-16.2-black?style=flat&logo=next.js)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=flat&logo=typescript)](https://typescriptlang.org)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.2-cyan?style=flat&logo=tailwind)](https://tailwindcss.com)
+[![Prisma](https://img.shields.io/badge/Prisma-7.8-5cc1a7?style=flat&logo=prisma)](https://prisma.io)
+[![Stripe](https://img.shields.io/badge/Stripe-22.1-green?style=flat&logo=stripe)](https://stripe.com)
 
 **CourseMind** is an all-in-one AI-powered platform for creating, managing, and learning online courses. Built with the latest Next.js 16 (App Router), it features AI content generation, interactive quizzes, progress tracking, PDF certificates, Stripe subscriptions, and a full admin dashboard.
 
