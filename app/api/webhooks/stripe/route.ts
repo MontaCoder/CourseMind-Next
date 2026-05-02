@@ -6,6 +6,16 @@ import { STRIPE_PLANS } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { sendEmail, emailTemplates } from "@/lib/email";
 
+function getSubscriptionPeriod(subscription: Stripe.Subscription) {
+  const subscriptionItem = subscription.items.data[0];
+
+  if (!subscriptionItem) {
+    throw new Error("Subscription items are missing");
+  }
+
+  return subscriptionItem;
+}
+
 export async function POST(req: Request) {
   const body = await req.text();
   const signature = (await headers()).get("Stripe-Signature") as string;
@@ -31,6 +41,7 @@ export async function POST(req: Request) {
         const subscription = await stripe.subscriptions.retrieve(
           session.subscription as string
         );
+        const subscriptionItem = getSubscriptionPeriod(subscription);
 
         // Get user for email
         const user = await db.user.findUnique({
@@ -45,12 +56,8 @@ export async function POST(req: Request) {
             status: "ACTIVE",
             stripeSubscriptionId: subscription.id,
             stripeCustomerId: subscription.customer as string,
-            currentPeriodStart: new Date(
-              subscription.current_period_start * 1000
-            ),
-            currentPeriodEnd: new Date(
-              subscription.current_period_end * 1000
-            ),
+            currentPeriodStart: new Date(subscriptionItem.current_period_start * 1000),
+            currentPeriodEnd: new Date(subscriptionItem.current_period_end * 1000),
           },
         });
 
@@ -62,9 +69,7 @@ export async function POST(req: Request) {
             userName: user.name || "User",
             plan: planDetails.name,
             price: `$${planDetails.price}`,
-            nextBillingDate: new Date(
-              subscription.current_period_end * 1000
-            ).toLocaleDateString(),
+            nextBillingDate: new Date(subscriptionItem.current_period_end * 1000).toLocaleDateString(),
           });
 
           await sendEmail({
@@ -81,11 +86,13 @@ export async function POST(req: Request) {
 
       case "invoice.payment_succeeded": {
         const invoice = event.data.object as Stripe.Invoice;
+        const invoiceSubscription = invoice.parent?.subscription_details?.subscription;
+        const subscriptionId =
+          typeof invoiceSubscription === "string" ? invoiceSubscription : invoiceSubscription?.id;
 
-        if (invoice.subscription) {
-          const subscription = await stripe.subscriptions.retrieve(
-            invoice.subscription as string
-          );
+        if (subscriptionId) {
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          const subscriptionItem = getSubscriptionPeriod(subscription);
 
           // Update subscription period end
           await db.subscription.updateMany({
@@ -93,9 +100,7 @@ export async function POST(req: Request) {
               stripeSubscriptionId: subscription.id,
             },
             data: {
-              currentPeriodEnd: new Date(
-                subscription.current_period_end * 1000
-              ),
+              currentPeriodEnd: new Date(subscriptionItem.current_period_end * 1000),
             },
           });
 
@@ -106,6 +111,7 @@ export async function POST(req: Request) {
 
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
+        const subscriptionItem = getSubscriptionPeriod(subscription);
 
         // Get subscription and user for email
         const dbSubscription = await db.subscription.findFirst({
@@ -128,9 +134,7 @@ export async function POST(req: Request) {
           const email = emailTemplates.subscriptionCanceled({
             userName: dbSubscription.user.name || "User",
             plan: dbSubscription.plan,
-            endDate: new Date(
-              subscription.current_period_end * 1000
-            ).toLocaleDateString(),
+            endDate: new Date(subscriptionItem.current_period_end * 1000).toLocaleDateString(),
           });
 
           await sendEmail({
@@ -147,6 +151,7 @@ export async function POST(req: Request) {
 
       case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription;
+        const subscriptionItem = getSubscriptionPeriod(subscription);
 
         // Update subscription status
         await db.subscription.updateMany({
@@ -161,9 +166,7 @@ export async function POST(req: Request) {
                 ? "CANCELED"
                 : "ACTIVE",
             cancelAtPeriodEnd: subscription.cancel_at_period_end,
-            currentPeriodEnd: new Date(
-              subscription.current_period_end * 1000
-            ),
+            currentPeriodEnd: new Date(subscriptionItem.current_period_end * 1000),
           },
         });
 
