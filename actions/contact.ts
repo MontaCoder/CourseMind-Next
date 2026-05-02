@@ -136,7 +136,7 @@ The CourseMind Team
     console.error("Error submitting contact form:", error);
 
     if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message };
+      return { error: error.issues[0]?.message ?? "Invalid input" };
     }
 
     return { error: "Failed to send message. Please try again." };

@@ -77,7 +77,7 @@ export async function sendChatMessage(formData: FormData) {
   } catch (error) {
     console.error("Error in chat:", error);
     if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message };
+      return { error: error.issues[0]?.message ?? "Invalid input" };
     }
     return { error: "Failed to get response. Please try again." };
   }

@@ -68,7 +68,7 @@ export async function signup(formData: FormData) {
     return { success: true, userId: user.id };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message };
+      return { error: error.issues[0]?.message ?? "Invalid input" };
     }
     return { error: "Something went wrong. Please try again." };
   }
@@ -107,7 +107,7 @@ export async function requestPasswordReset(formData: FormData) {
     return { success: true };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message };
+      return { error: error.issues[0]?.message ?? "Invalid input" };
     }
     return { error: "Something went wrong. Please try again." };
   }
@@ -151,7 +151,7 @@ export async function resetPassword(formData: FormData) {
     return { success: true };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message };
+      return { error: error.issues[0]?.message ?? "Invalid input" };
     }
     return { error: "Something went wrong. Please try again." };
   }

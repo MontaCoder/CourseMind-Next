@@ -50,7 +50,7 @@ export async function updateProfile(formData: FormData) {
     return { success: true };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message };
+      return { error: error.issues[0]?.message ?? "Invalid input" };
     }
     return { error: "Failed to update profile" };
   }
@@ -109,7 +109,7 @@ export async function updatePassword(formData: FormData) {
     return { success: true };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message };
+      return { error: error.issues[0]?.message ?? "Invalid input" };
     }
     return { error: "Failed to update password" };
   }

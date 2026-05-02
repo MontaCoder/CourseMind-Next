@@ -87,7 +87,7 @@ export async function saveNote(formData: FormData) {
   } catch (error) {
     console.error("Error saving note:", error);
     if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message };
+      return { error: error.issues[0]?.message ?? "Invalid input" };
     }
     return { error: "Failed to save note" };
   }

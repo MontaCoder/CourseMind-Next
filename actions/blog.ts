@@ -42,7 +42,7 @@ export async function createBlogPost(data: z.infer<typeof blogPostSchema>) {
     console.error("Error creating blog post:", error);
 
     if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message };
+      return { error: error.issues[0]?.message ?? "Invalid input" };
     }
 
     return { error: "Failed to create post. Please try again." };
@@ -82,7 +82,7 @@ export async function updateBlogPost(
     console.error("Error updating blog post:", error);
 
     if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message };
+      return { error: error.issues[0]?.message ?? "Invalid input" };
     }
 
     return { error: "Failed to update post. Please try again." };

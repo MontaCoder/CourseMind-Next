@@ -60,7 +60,7 @@ export async function updatePolicy(data: z.infer<typeof policySchema>) {
     console.error("Error updating policy:", error);
 
     if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message };
+      return { error: error.issues[0]?.message ?? "Invalid input" };
     }
 
     return { error: "Failed to update policy. Please try again." };

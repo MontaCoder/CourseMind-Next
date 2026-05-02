@@ -55,7 +55,7 @@ export async function withActionHandler<T>(
     if (error instanceof z.ZodError) {
       return {
         success: false,
-        error: error.errors[0].message,
+        error: error.issues[0]?.message ?? "Invalid input",
       };
     }
 
@@ -108,7 +108,7 @@ export async function withLegacyActionHandler<T extends Record<string, unknown>>
 
     // Handle Zod validation errors
     if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message };
+      return { error: error.issues[0]?.message ?? "Invalid input" };
     }
 
     // Handle custom ActionError
@@ -140,7 +140,7 @@ export function validateFormData<T extends z.ZodType>(
     return schema.parse(data);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      throw new ActionError(error.errors[0].message);
+      throw new ActionError(error.issues[0]?.message ?? "Invalid input");
     }
     throw error;
   }
