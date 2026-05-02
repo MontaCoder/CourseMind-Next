@@ -1,9 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Manrope } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SessionProvider } from "@/components/session-provider";
 import { Toaster } from "@/components/ui/sonner";
+
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -22,6 +24,7 @@ export const metadata: Metadata = {
   description: "Generate comprehensive courses on any topic with AI in minutes. Support for 39 languages, video tutorials, and interactive learning.",
   keywords: ["AI course generation", "online learning", "course creator", "education platform", "AI learning", "course builder"],
   authors: [{ name: "CourseMind" }],
+  metadataBase: new URL(siteUrl),
   manifest: "/manifest.json",
   applicationName: "CourseMind",
   appleWebApp: {
@@ -37,10 +40,10 @@ export const metadata: Metadata = {
     siteName: "CourseMind",
     title: "CourseMind - AI-Powered Course Generation",
     description: "Generate comprehensive courses on any topic with AI in minutes. Support for 39 languages.",
-    url: process.env.NEXT_PUBLIC_APP_URL || "https://coursemind.com",
+    url: siteUrl,
     images: [
       {
-        url: "/og-image.png",
+        url: "/logo.svg",
         width: 1200,
         height: 630,
         alt: "CourseMind",
@@ -51,24 +54,18 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "CourseMind - AI-Powered Course Generation",
     description: "Generate comprehensive courses on any topic with AI in minutes. Support for 39 languages.",
-    images: ["/og-image.png"],
+    images: ["/logo.svg"],
   },
   icons: {
-    icon: [
-      { url: "/favicon.ico" },
-      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icon-512x512.png", sizes: "512x512", type: "image/png" },
-    ],
-    apple: [
-      { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
-    ],
+    icon: [{ url: "/logo.svg", type: "image/svg+xml" }],
   },
+};
+
+export const viewport: Viewport = {
   themeColor: "#667eea",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-  },
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({
@@ -77,7 +74,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <body className={`${inter.variable} ${manrope.variable} font-sans`}>
         <SessionProvider>
           <ThemeProvider
