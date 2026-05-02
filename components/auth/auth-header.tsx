@@ -19,6 +19,7 @@ export function AuthHeader({ title, subtitle }: AuthHeaderProps) {
           alt={`${APP_CONFIG.name} Logo`}
           width={32}
           height={32}
+          priority
           className="drop-shadow-sm"
         />
         <span className="text-2xl font-bold bg-gradient-to-r from-primary to-accent text-transparent bg-clip-text">

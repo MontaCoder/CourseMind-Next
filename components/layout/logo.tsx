@@ -53,6 +53,7 @@ export function Logo({
           alt={`${APP_CONFIG.name} Logo`}
           width={config.image.width}
           height={config.image.height}
+          priority
           className="drop-shadow-sm transition-transform group-hover:scale-105"
         />
       )}

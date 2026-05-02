@@ -79,7 +79,14 @@ function ResetPasswordForm() {
         <div className="rounded-2xl border border-border/60 bg-white/70 p-8 shadow-2xl backdrop-blur-xl dark:bg-card/85">
           <div className="mb-8 text-center">
             <Link href="/" className="inline-flex items-center gap-2 mb-4">
-              <Image src="/logo.svg" alt="CourseMind Logo" width={32} height={32} className="drop-shadow-sm" />
+              <Image
+                src="/logo.svg"
+                alt="CourseMind Logo"
+                width={32}
+                height={32}
+                priority
+                className="drop-shadow-sm"
+              />
               <span className="text-2xl font-bold bg-gradient-to-r from-primary to-accent text-transparent bg-clip-text">
                 {appName}
               </span>
